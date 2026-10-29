@@ -26,7 +26,15 @@ const Client = await connectToMongoDB()
 
 const database = Client.db("wnaderlust")
 
-const destanationCollection = database.collection("destination");
+//  database.createCollection("destination", {
+
+// })
+
+const destanationCollection = database.collection("destination",{
+
+});
+const userCollections = database.collection("user")
+const bookingsCollections = database.collection("bookings")
 
 app.use(cors())
 app.use(express.json())
@@ -78,9 +86,45 @@ app.patch('/update-destination/:id', async (req , res) => {
 
 app.delete('/delete-destination/:id', async (req , res)=> {
    const destinationId = req.params.id
-   const deletedData = await destanationCollection.deleteOne({_id : new ObjectId(destinationId)})
+   const deletedData = await destanationCollection.deleteOne({_id : ObjectId(destinationId)})
    return res.status(200).json({
     message : "You deleted destination successfully",
+    deletedData
+   })
+})
+
+app.post('/booking/:email', async (req , res) => {
+    const userEmail = req.params.email
+    const bookingItem = req.body
+
+    const currentUser = await userCollections.findOne({
+          email : { $eq : userEmail}
+        // email : userEmail
+    }) 
+    const newBooking = await bookingsCollections.insertOne({
+        username : currentUser.name,
+        ...currentUser,
+        ...bookingItem
+    });
+
+    res.status(200).json({message : "success" , newBooking })
+})
+
+app.get('/find-booking/:email', async (req , res) => {
+    const userEmail = req.params.email;
+    const currentUserBookings = await bookingsCollections.find({
+        email : { $eq : userEmail}
+    }).toArray();
+    res.status(200).json({message : "success" , currentUserBookings})
+});
+
+app.delete('/deleting/:id', async (req , res)=>{
+   const myBookingId = req.params.id
+   
+   const deletedData = await bookingsCollections.deleteOne({_id :myBookingId});
+    console.log("id",deletedData);
+   res.status(200).send({
+    message : "You bacome success to delete data",
     deletedData
    })
 })
