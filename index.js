@@ -54,12 +54,12 @@ const verifyMiddleware = async (req, res , next)=> {
 
       try {
         const JWKS = createRemoteJWKSet(
-        new URL('http://localhost:3000/api/auth/jwks')
+        new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
       )
       
       const { payload } = await jwtVerify(token, JWKS, {
-         issuer: 'http://localhost:3000', // Should match your JWT issuer, which is the BASE_URL
-      audience: 'http://localhost:3000', // 
+         issuer: process.env.CLIENT_URL, // Should match your JWT issuer, which is the BASE_URL
+         audience: process.env.CLIENT_URL, // 
       })
       console.log(payload);
       next()  
